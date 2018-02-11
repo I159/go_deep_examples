@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"github.com/I159/go_deep" 
+
+	"github.com/I159/go_deep"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nn := go_deep.NewPerceptron(.25, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10)
+	nn := go_deep.NewPerceptron(.25, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 1024)
 
 	learnCost := nn.Learn(set, labels)
 
@@ -38,10 +39,7 @@ func main() {
 	defer f.Close()
 	w := bufio.NewWriter(f)
 	fmt.Fprint(w, learnCost)
-	
+
 	accuracy, _ := nn.Measure(tSet, tLabels)
-	//for _, i := range cost {
-		//fmt.Println(i)
-	//}
 	fmt.Printf("Accuracy: %f\n", accuracy)
 }
