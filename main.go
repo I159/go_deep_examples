@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/I159/go_deep"
+	tm "github.com/buger/goterm"
 )
 
 func main() {
@@ -26,13 +27,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nn := go_deep.NewPerceptron(.01, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 512)
+	nn := go_deep.NewPerceptron(.00001, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 8, 64)
 
 	learnCost := nn.Learn(set, labels)
-	for _, i := range learnCost {
-		fmt.Println(i)
+
+	chart := tm.NewLineChart(100, 20)
+	data := new(tm.DataTable)
+	data.AddColumn("Time")
+	data.AddColumn("Cost")
+	for i, c := range learnCost {
+		data.AddRow(float64(i/10), c)
 	}
 
 	accuracy, _ := nn.Measure(tSet, tLabels)
 	fmt.Printf("Accuracy: %f\n", accuracy)
+	tm.Println(chart.Draw(data))
+	tm.Flush()
 }
