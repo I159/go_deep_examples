@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/I159/go_deep"
 )
@@ -28,17 +26,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nn := go_deep.NewPerceptron(.25, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 1024)
+	nn := go_deep.NewPerceptron(.01, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 512)
 
 	learnCost := nn.Learn(set, labels)
-
-	f, err := os.Create("learn_costs.txt")
-	if err != nil {
-		log.Fatal(err)
+	for _, i := range learnCost {
+		fmt.Println(i)
 	}
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	fmt.Fprint(w, learnCost)
 
 	accuracy, _ := nn.Measure(tSet, tLabels)
 	fmt.Printf("Accuracy: %f\n", accuracy)
