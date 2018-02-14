@@ -9,10 +9,10 @@ import (
 )
 
 func main() {
-	tLabels, err := getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//tLabels, err := getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
+	//if err != nil {
+	//log.Fatal(err)
+	//}
 	labels, err := getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
 	if err != nil {
 		log.Fatal(err)
@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nn := go_deep.NewPerceptron(.00001, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 8, 64)
+	nn := go_deep.NewPerceptron(.00001, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 32, 512)
 
 	learnCost := nn.Learn(set, labels)
 
@@ -38,9 +38,14 @@ func main() {
 	for i, c := range learnCost {
 		data.AddRow(float64(i/10), c)
 	}
-
-	accuracy, _ := nn.Measure(tSet, tLabels)
-	fmt.Printf("Accuracy: %f\n", accuracy)
 	tm.Println(chart.Draw(data))
 	tm.Flush()
+
+	prediction := nn.Recognize(tSet)
+	for _, pred := range prediction {
+		for _, p := range pred {
+			fmt.Println(p)
+		}
+		fmt.Println("~~~~~~~~~")
+	}
 }
