@@ -19,10 +19,10 @@ func equal(a, b float64) bool {
 }
 
 func main() {
-	//tLabels, err := getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
-	//if err != nil {
-		//log.Fatal(err)
-	//}
+	tLabels, err := getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
+	if err != nil {
+		log.Fatal(err)
+	}
 	labels, err := getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +37,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nn := go_deep.NewPerceptron(.0001, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 16, 764)
+	nn := go_deep.NewPerceptron(.0001, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 8, 764)
 
 	learnCost := nn.Learn(set, labels)
 
@@ -50,19 +50,24 @@ func main() {
 	}
 	tm.Println(chart.Draw(data))
 
+	accuracy := map[bool]float64{true: 0, false: 0}
 	prediction := nn.Recognize(tSet)
-	for _, pred := range prediction {
+	for i, pred := range prediction {
 		max := 0.0
-		for _, p := range pred {
+		maxIdx := 0
+		for j, p := range pred {
 			fmt.Println(p)
 			local := math.Max(max, p)
 			if !equal(local, max) {
 				max = local
+				maxIdx = j
 			}
 		}
-		fmt.Printf("MAX: %f", max)
+		accuracy[tLabels[i][maxIdx] == 1]++
+		fmt.Printf("MAX: %f IDX: %d, LABEL: %.0f\n", max, maxIdx, tLabels[i][maxIdx])
 		fmt.Println("~~~~~~~~~")
 	}
 
 	tm.Flush()
+	fmt.Printf("Accuracy: %f\n", accuracy[true] / accuracy[false])
 }
