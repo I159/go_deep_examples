@@ -37,7 +37,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nn := go_deep.NewPerceptron(.0001, &go_deep.Sygmoid{}, &go_deep.Quadratic{}, 784, 64, 10, 8, 764)
+	shape := go_deep.Shape{
+		InputSize: 784,
+		HiddenSizes: []int{64},
+		OutputSize: 10,
+		HiddenLearningRates: []float64{0.001},
+		HiddenActivations: []activation{&go_deep.Sygmoid{}},
+		OutputActivation: &go_deep.Sygmoid{},
+		Cost: &go_deep.Quadratic{},
+	}
+	nn := go_deep.NewPerceptron(shape)
 
 	learnCost := nn.Learn(set, labels)
 
