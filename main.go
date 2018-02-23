@@ -42,13 +42,13 @@ func main() {
 		HiddenSizes: []int{64},
 		OutputSize: 10,
 		HiddenLearningRates: []float64{0.001},
-		HiddenActivations: []activation{&go_deep.Sygmoid{}},
+		HiddenActivations: []go_deep.Activation{&go_deep.Sygmoid{}},
 		OutputActivation: &go_deep.Sygmoid{},
 		Cost: &go_deep.Quadratic{},
 	}
 	nn := go_deep.NewPerceptron(shape)
 
-	learnCost := nn.Learn(set, labels)
+	learnCost := nn.Learn(set, labels, 16, 512)
 
 	chart := tm.NewLineChart(100, 20)
 	data := new(tm.DataTable)
