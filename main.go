@@ -38,45 +38,48 @@ func main() {
 	}
 
 	shape := go_deep.Shape{
-		InputSize: 784,
-		HiddenSizes: []int{64},
-		OutputSize: 10,
+		InputSize:           784,
+		HiddenSizes:         []int{64},
+		OutputSize:          10,
 		HiddenLearningRates: []float64{0.001},
-		HiddenActivations: []go_deep.Activation{&go_deep.Sygmoid{}},
-		OutputActivation: &go_deep.Sygmoid{},
-		Cost: &go_deep.Quadratic{},
+		HiddenActivations:   []go_deep.Activation{&go_deep.Sygmoid{}},
+		OutputActivation:    &go_deep.Sygmoid{},
+		Cost:                &go_deep.Quadratic{},
 	}
 	nn := go_deep.NewPerceptron(shape)
 
-	learnCost := nn.Learn(set, labels, 16, 512)
+	learnCost := nn.Learn(set, labels, 4, 1024)
 
 	chart := tm.NewLineChart(100, 20)
 	data := new(tm.DataTable)
 	data.AddColumn("Time")
 	data.AddColumn("Cost")
 	for i, c := range learnCost {
-		data.AddRow(float64(i/10), c)
+		data.AddRow(float64(i), c)
 	}
 	tm.Println(chart.Draw(data))
 
-	accuracy := map[bool]float64{true: 0, false: 0}
+	//accuracy := map[bool]float64{true: 0, false: 0}
 	prediction := nn.Recognize(tSet)
 	for i, pred := range prediction {
 		max := 0.0
-		maxIdx := 0
+		idx := 0
+		label := 0
 		for j, p := range pred {
-			fmt.Println(p)
+			//fmt.Println(p, tLabels[i][j])
+
 			local := math.Max(max, p)
 			if !equal(local, max) {
 				max = local
-				maxIdx = j
+				idx = j
+			}
+			if tLabels[i][j] == 1 {
+				label = j
 			}
 		}
-		accuracy[tLabels[i][maxIdx] == 1]++
-		fmt.Printf("MAX: %f IDX: %d, LABEL: %.0f\n", max, maxIdx, tLabels[i][maxIdx])
-		fmt.Println("~~~~~~~~~")
+		fmt.Printf("PREDICTION: %d LABEL: %d\n", idx, label)
 	}
 
 	tm.Flush()
-	fmt.Printf("Accuracy: %f\n", accuracy[true] / accuracy[false])
+	//fmt.Printf("Accuracy: %f\n", accuracy[true] / accuracy[false])
 }
