@@ -37,16 +37,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	shape := go_deep.Shape{
-		InputSize:           784,
-		HiddenSizes:         []int{64},
-		OutputSize:          10,
-		HiddenLearningRates: []float64{0.001},
-		HiddenActivations:   []go_deep.Activation{&go_deep.Sygmoid{}},
-		OutputActivation:    &go_deep.Sygmoid{},
-		Cost:                &go_deep.Quadratic{},
+	inputShape := go_deep.InputShape{
+		Size: 784,
+		LearningRate: .001,
 	}
-	nn := go_deep.NewPerceptron(shape)
+	hiddenLayers := []go_deep.HiddenShape{
+		go_deep.HiddenShape{
+			Size: 64,
+			LearningRate: .001,
+			Activation: new(go_deep.Sygmoid),
+		},
+	}
+	outputLayer := go_deep.OutputShape{
+		Size: 10,
+		Activation: new(go_deep.Sygmoid),
+		Cost: new(go_deep.Quadratic),
+	}
+	nn := go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
 
 	learnCost := nn.Learn(set, labels, 4, 1024)
 
