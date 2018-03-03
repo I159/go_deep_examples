@@ -18,25 +18,28 @@ func equal(a, b float64) bool {
 	return false
 }
 
-func main() {
-	tLabels, err := getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
+func getSets() (set, tSet, labels, tLabels [][]float64, err error) {
+	tLabels, err = getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-	labels, err := getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
+	labels, err = getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	tSet, err := getMNISTTrainingImgs("t10k-images-idx3-ubyte")
-	if err != nil {
-		log.Fatal(err)
-	}
-	set, err := getMNISTTrainingImgs("train-images-idx3-ubyte")
-	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
+	tSet, err = getMNISTTrainingImgs("t10k-images-idx3-ubyte")
+	if err != nil {
+		return
+	}
+	set, err = getMNISTTrainingImgs("train-images-idx3-ubyte")
+	if err != nil {
+		return
+	}
+	return
+}
+
+func declareNetwork() go_deep.Network {
 	inputShape := go_deep.InputShape{
 		Size: 784,
 		LearningRate: .001,
@@ -53,14 +56,11 @@ func main() {
 		Activation: new(go_deep.Sygmoid),
 		Cost: new(go_deep.Quadratic),
 	}
-	nn := go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
+	return go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
+}
 
-	learnCost, err := nn.Learn(set, labels, 1, 1024)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	chart := tm.NewLineChart(100, 20)
+func visualizeGradient(learnCost []float64) {
+	chart := tm.NewLineChart(99, 20)
 	data := new(tm.DataTable)
 	data.AddColumn("Time")
 	data.AddColumn("Cost")
@@ -68,19 +68,16 @@ func main() {
 		data.AddRow(float64(i), c)
 	}
 	tm.Println(chart.Draw(data))
+	tm.Flush()
+}
 
+func countAccuracy(prediction, tLabels [][]float64) {
 	//accuracy := map[bool]float64{true: 0, false: 0}
-	prediction, err := nn.Recognize(tSet)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 	for i, pred := range prediction {
 		max := 0.0
 		idx := 0
 		label := 0
 		for j, p := range pred {
-			//fmt.Println(p, tLabels[i][j])
-
 			local := math.Max(max, p)
 			if !equal(local, max) {
 				max = local
@@ -92,7 +89,28 @@ func main() {
 		}
 		fmt.Printf("PREDICTION: %d LABEL: %d\n", idx, label)
 	}
-
-	tm.Flush()
 	//fmt.Printf("Accuracy: %f\n", accuracy[true] / accuracy[false])
+}
+
+
+func main() {
+	set, tSet, labels, tLabels , err:= getSets()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	nn := declareNetwork()
+
+	learnCost, err := nn.Learn(set, labels, 1, 1024)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	prediction, err := nn.Recognize(tSet)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	countAccuracy(prediction, tLabels)
+	visualizeGradient(learnCost)
 }
