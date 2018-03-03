@@ -55,7 +55,10 @@ func main() {
 	}
 	nn := go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
 
-	learnCost := nn.Learn(set, labels, 4, 1024)
+	learnCost, err := nn.Learn(set, labels, 1, 1024)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	chart := tm.NewLineChart(100, 20)
 	data := new(tm.DataTable)
@@ -67,7 +70,10 @@ func main() {
 	tm.Println(chart.Draw(data))
 
 	//accuracy := map[bool]float64{true: 0, false: 0}
-	prediction := nn.Recognize(tSet)
+	prediction, err := nn.Recognize(tSet)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	for i, pred := range prediction {
 		max := 0.0
 		idx := 0
