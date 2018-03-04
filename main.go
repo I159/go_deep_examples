@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -84,7 +85,7 @@ func visualizeGradient(learnCost []float64) {
 }
 
 func countAccuracy(prediction, tLabels [][]float64) {
-	//accuracy := map[bool]float64{true: 0, false: 0}
+	accuracy := map[bool]float64{true: 0, false: 0}
 	for i, pred := range prediction {
 		max := 0.0
 		idx := 0
@@ -100,8 +101,9 @@ func countAccuracy(prediction, tLabels [][]float64) {
 			}
 		}
 		fmt.Printf("PREDICTION: %d LABEL: %d\n", idx, label)
+		accuracy[idx == label]++
 	}
-	//fmt.Printf("Accuracy: %f\n", accuracy[true] / accuracy[false])
+	fmt.Printf("Accuracy: %f\n", accuracy[true]/accuracy[false])
 }
 
 func main() {
@@ -112,7 +114,10 @@ func main() {
 
 	nn := declareNetwork()
 
-	learnCost, err := nn.Learn(set, labels, 1, 1024)
+	epochs := flag.Int("epochs", 1, "Number of epochs of learning")
+	batch := flag.Int("batch", 512, "Batche size in items")
+	flag.Parse()
+	learnCost, err := nn.Learn(set, labels, *epochs, *batch)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
