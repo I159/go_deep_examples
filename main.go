@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -18,46 +19,61 @@ func equal(a, b float64) bool {
 	return false
 }
 
-func main() {
-	tLabels, err := getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
+func getSets() (set, tSet, labels, tLabels [][]float64, err error) {
+	tLabels, err = getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-	labels, err := getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
+	labels, err = getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	tSet, err := getMNISTTrainingImgs("t10k-images-idx3-ubyte")
-	if err != nil {
-		log.Fatal(err)
-	}
-	set, err := getMNISTTrainingImgs("train-images-idx3-ubyte")
-	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
+	tSet, err = getMNISTTrainingImgs("t10k-images-idx3-ubyte")
+	if err != nil {
+		return
+	}
+	for i := range tSet {
+		for j := range tSet[i] {
+			tSet[i][j] = (tSet[i][j] - 127.5) / 127.5
+		}
+	}
+
+	set, err = getMNISTTrainingImgs("train-images-idx3-ubyte")
+	if err != nil {
+		return
+	}
+	for i := range set {
+		for j := range set[i] {
+			set[i][j] = (set[i][j] - 127.5) / 127.5
+		}
+	}
+	return
+}
+
+func declareNetwork() go_deep.Network {
 	inputShape := go_deep.InputShape{
-		Size: 784,
+		Size:         784,
 		LearningRate: .001,
 	}
 	hiddenLayers := []go_deep.HiddenShape{
 		go_deep.HiddenShape{
-			Size: 64,
+			Size:         64,
 			LearningRate: .001,
-			Activation: new(go_deep.Sygmoid),
+			Bias:         0.5,
+			Activation:   new(go_deep.Sigmoid),
 		},
 	}
 	outputLayer := go_deep.OutputShape{
-		Size: 10,
-		Activation: new(go_deep.Sygmoid),
-		Cost: new(go_deep.Quadratic),
+		Size:       10,
+		Activation: new(go_deep.Sigmoid),
+		Cost:       new(go_deep.Quadratic),
 	}
-	nn := go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
+	return go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
+}
 
-	learnCost := nn.Learn(set, labels, 4, 1024)
-
-	chart := tm.NewLineChart(100, 20)
+func visualizeGradient(learnCost []float64) {
+	chart := tm.NewLineChart(99, 20)
 	data := new(tm.DataTable)
 	data.AddColumn("Time")
 	data.AddColumn("Cost")
@@ -65,16 +81,16 @@ func main() {
 		data.AddRow(float64(i), c)
 	}
 	tm.Println(chart.Draw(data))
+	tm.Flush()
+}
 
-	//accuracy := map[bool]float64{true: 0, false: 0}
-	prediction := nn.Recognize(tSet)
+func countAccuracy(prediction, tLabels [][]float64) {
+	accuracy := map[bool]float64{true: 0, false: 0}
 	for i, pred := range prediction {
 		max := 0.0
 		idx := 0
 		label := 0
 		for j, p := range pred {
-			//fmt.Println(p, tLabels[i][j])
-
 			local := math.Max(max, p)
 			if !equal(local, max) {
 				max = local
@@ -85,8 +101,32 @@ func main() {
 			}
 		}
 		fmt.Printf("PREDICTION: %d LABEL: %d\n", idx, label)
+		accuracy[idx == label]++
+	}
+	fmt.Printf("Accuracy: %f\n", accuracy[true]/accuracy[false])
+}
+
+func main() {
+	set, tSet, labels, tLabels, err := getSets()
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	tm.Flush()
-	//fmt.Printf("Accuracy: %f\n", accuracy[true] / accuracy[false])
+	nn := declareNetwork()
+
+	epochs := flag.Int("epochs", 1, "Number of epochs of learning")
+	batch := flag.Int("batch", 512, "Batche size in items")
+	flag.Parse()
+	learnCost, err := nn.Learn(set, labels, *epochs, *batch)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	prediction, err := nn.Recognize(tSet)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	countAccuracy(prediction, tLabels)
+	visualizeGradient(learnCost)
 }
