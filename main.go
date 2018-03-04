@@ -32,9 +32,20 @@ func getSets() (set, tSet, labels, tLabels [][]float64, err error) {
 	if err != nil {
 		return
 	}
+	for i := range tSet {
+		for j := range tSet[i] {
+			tSet[i][j] = (tSet[i][j] - 127.5) / 127.5
+		}
+	}
+
 	set, err = getMNISTTrainingImgs("train-images-idx3-ubyte")
 	if err != nil {
 		return
+	}
+	for i := range set {
+		for j := range set[i] {
+			set[i][j] = (set[i][j] - 127.5) / 127.5
+		}
 	}
 	return
 }
@@ -49,12 +60,12 @@ func declareNetwork() go_deep.Network {
 			Size:         64,
 			LearningRate: .001,
 			Bias:         0.5,
-			Activation:   go_deep.NewSigmoid(784, 0.1, 256, -0.5, 0.5, 0),
+			Activation:   new(go_deep.Sigmoid),
 		},
 	}
 	outputLayer := go_deep.OutputShape{
 		Size:       10,
-		Activation: go_deep.NewSigmoid(64, 0.1, 1, -1, 1, 0.5),
+		Activation: new(go_deep.Sigmoid),
 		Cost:       new(go_deep.Quadratic),
 	}
 	return go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
