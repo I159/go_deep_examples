@@ -85,25 +85,35 @@ func visualizeGradient(learnCost []float64) {
 }
 
 func countAccuracy(prediction, tLabels [][]float64) {
-	accuracy := map[bool]float64{true: 0, false: 0}
+	accuracyMax := map[bool]float64{true: 0, false: 0}
+	accuracyMin := map[bool]float64{true: 0, false: 0}
 	for i, pred := range prediction {
 		max := 0.0
-		idx := 0
+		min := 0.0
+		maxIdx := 0
+		minIdx := 0
 		label := 0
 		for j, p := range pred {
-			local := math.Max(max, p)
-			if !equal(local, max) {
-				max = local
-				idx = j
+			localMax := math.Max(max, p)
+			if !equal(localMax, max) {
+				max = localMax
+				maxIdx = j
+			}
+			localMin := math.Min(min, p)
+			if !equal(localMin, min) {
+				min = localMin
+				minIdx = j
 			}
 			if tLabels[i][j] == 1 {
 				label = j
 			}
 		}
-		fmt.Printf("PREDICTION: %d LABEL: %d\n", idx, label)
-		accuracy[idx == label]++
+		fmt.Printf("MAX: %d MIN: %d LABEL: %d\n", maxIdx,minIdx, label)
+		accuracyMax[maxIdx == label]++
+		accuracyMin[minIdx == label]++
 	}
-	fmt.Printf("Accuracy: %f\n", accuracy[true]/accuracy[false])
+	fmt.Printf("AccuracyMax: %f\n", accuracyMax[true]/accuracyMax[false])
+	fmt.Printf("AccuracyMin: %f\n", accuracyMin[true]/accuracyMin[false])
 }
 
 func main() {
@@ -115,7 +125,7 @@ func main() {
 	nn := declareNetwork()
 
 	epochs := flag.Int("epochs", 1, "Number of epochs of learning")
-	batch := flag.Int("batch", 512, "Batche size in items")
+	batch := flag.Int("batch", 512, "Batch size in items")
 	flag.Parse()
 	learnCost, err := nn.Learn(set, labels, *epochs, *batch)
 	if err != nil {
