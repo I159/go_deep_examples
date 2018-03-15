@@ -89,9 +89,7 @@ func countAccuracy(prediction, tLabels [][]float64) {
 	accuracyMin := map[bool]float64{true: 0, false: 0}
 	for i, pred := range prediction {
 		max := 0.0
-		min := 0.0
 		maxIdx := 0
-		minIdx := 0
 		label := 0
 		for j, p := range pred {
 			localMax := math.Max(max, p)
@@ -99,21 +97,14 @@ func countAccuracy(prediction, tLabels [][]float64) {
 				max = localMax
 				maxIdx = j
 			}
-			localMin := math.Min(min, p)
-			if !equal(localMin, min) {
-				min = localMin
-				minIdx = j
-			}
 			if tLabels[i][j] == 1 {
 				label = j
 			}
 		}
-		fmt.Printf("MAX: %d MIN: %d LABEL: %d\n", maxIdx,minIdx, label)
+		fmt.Printf("MAX: %d LABEL: %d\n", maxIdx, label)
 		accuracyMax[maxIdx == label]++
-		accuracyMin[minIdx == label]++
 	}
-	fmt.Printf("AccuracyMax: %f\n", accuracyMax[true]/accuracyMax[false])
-	fmt.Printf("AccuracyMin: %f\n", accuracyMin[true]/accuracyMin[false])
+	fmt.Printf("Accuracy: %f\n", accuracyMax[true]/accuracyMax[false])
 }
 
 func main() {
