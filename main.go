@@ -84,7 +84,7 @@ func visualizeGradient(learnCost []float64) {
 	tm.Flush()
 }
 
-func countAccuracy(prediction, tLabels [][]float64) {
+func countAccuracy(prediction, tLabels, set [][]float64) {
 	accuracyMax := map[bool]float64{true: 0, false: 0}
 	for i, pred := range prediction {
 		max := 0.0
@@ -99,6 +99,12 @@ func countAccuracy(prediction, tLabels [][]float64) {
 			if tLabels[i][j] == 1 {
 				label = j
 			}
+		}
+		img := image.NewGray(0,0,28, 28)
+		img.Pix = set[i]
+		imageFlusher := dotmatrix.braille.BrailleFlusher{}
+		if err := imageFlusher.flush(os.Stdout, img); err != nil {
+		 	log.Fatal(err)
 		}
 		fmt.Printf("MAX: %d LABEL: %d\n", maxIdx, label)
 		accuracyMax[maxIdx == label]++
