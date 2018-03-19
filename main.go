@@ -86,7 +86,6 @@ func visualizeGradient(learnCost []float64) {
 
 func countAccuracy(prediction, tLabels [][]float64) {
 	accuracyMax := map[bool]float64{true: 0, false: 0}
-	accuracyMin := map[bool]float64{true: 0, false: 0}
 	for i, pred := range prediction {
 		max := 0.0
 		maxIdx := 0
