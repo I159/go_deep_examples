@@ -3,11 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"image"
 	"log"
 	"math"
+	"os"
 
 	"github.com/I159/go_deep"
 	tm "github.com/buger/goterm"
+	"github.com/kevin-cantwell/dotmatrix"
 )
 
 const TOLERANCE = 0.000001
@@ -100,11 +103,18 @@ func countAccuracy(prediction, tLabels, set [][]float64) {
 				label = j
 			}
 		}
-		img := image.NewGray(0,0,28, 28)
-		img.Pix = set[i]
+		img := image.NewGray(image.Rect(0, 0, 28, 28))
+
+		// Rvert image pixels to uint8 value
+		var pix []uint8
+		for k := range set {
+			pix = append(pix, uint8(set[i][k]*127.5+127.5))
+		}
+
+		img.Pix = pix
 		imageFlusher := dotmatrix.braille.BrailleFlusher{}
 		if err := imageFlusher.flush(os.Stdout, img); err != nil {
-		 	log.Fatal(err)
+			log.Fatal(err)
 		}
 		fmt.Printf("MAX: %d LABEL: %d\n", maxIdx, label)
 		accuracyMax[maxIdx == label]++
