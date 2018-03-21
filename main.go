@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"path/filepath"
 
 	"github.com/I159/go_deep"
 	tm "github.com/buger/goterm"
@@ -22,17 +23,17 @@ func equal(a, b float64) bool {
 	return false
 }
 
-func getSets() (set, tSet, labels, tLabels [][]float64, err error) {
-	tLabels, err = getMNISTTrainingLabels("t10k-labels-idx1-ubyte", 10)
+func getSets(path string) (set, tSet, labels, tLabels [][]float64, err error) {
+	tLabels, err = getMNISTTrainingLabels(filepath.Join(path, "t10k-labels-idx1-ubyte"), 10)
 	if err != nil {
 		return
 	}
-	labels, err = getMNISTTrainingLabels("train-labels-idx1-ubyte", 10)
+	labels, err = getMNISTTrainingLabels(filepath.Join(path, "train-labels-idx1-ubyte"), 10)
 	if err != nil {
 		return
 	}
 
-	tSet, err = getMNISTTrainingImgs("t10k-images-idx3-ubyte")
+	tSet, err = getMNISTTrainingImgs(filepath.Join(path, "t10k-images-idx3-ubyte"))
 	if err != nil {
 		return
 	}
@@ -42,7 +43,7 @@ func getSets() (set, tSet, labels, tLabels [][]float64, err error) {
 		}
 	}
 
-	set, err = getMNISTTrainingImgs("train-images-idx3-ubyte")
+	set, err = getMNISTTrainingImgs(filepath.Join(path, "train-images-idx3-ubyte"))
 	if err != nil {
 		return
 	}
@@ -112,8 +113,8 @@ func countAccuracy(prediction, tLabels, set [][]float64) {
 		}
 
 		img.Pix = pix
-		imageFlusher := dotmatrix.braille.BrailleFlusher{}
-		if err := imageFlusher.flush(os.Stdout, img); err != nil {
+		imageFlusher := dotmatrix.BrailleFlusher{}
+		if err := imageFlusher.Flush(os.Stdout, img); err != nil {
 			log.Fatal(err)
 		}
 		fmt.Printf("MAX: %d LABEL: %d\n", maxIdx, label)
@@ -123,16 +124,18 @@ func countAccuracy(prediction, tLabels, set [][]float64) {
 }
 
 func main() {
-	set, tSet, labels, tLabels, err := getSets()
+	epochs := flag.Int("epochs", 1, "Number of epochs of learning")
+	batch := flag.Int("batch", 512, "Batch size in items")
+	path := flag.String("path", "~/Downloads", "Path to a directory containing binary data set files")
+	flag.Parse()
+
+	set, tSet, labels, tLabels, err := getSets(*path)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	nn := declareNetwork()
 
-	epochs := flag.Int("epochs", 1, "Number of epochs of learning")
-	batch := flag.Int("batch", 512, "Batch size in items")
-	flag.Parse()
 	learnCost, err := nn.Learn(set, labels, *epochs, *batch)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -143,6 +146,6 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	countAccuracy(prediction, tLabels)
+	countAccuracy(prediction, tLabels, tSet)
 	visualizeGradient(learnCost)
 }
