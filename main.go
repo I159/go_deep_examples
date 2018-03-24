@@ -106,17 +106,14 @@ func countAccuracy(prediction, tLabels, set [][]float64) {
 		}
 		img := image.NewGray(image.Rect(0, 0, 28, 28))
 
-		// Rvert image pixels to uint8 value
+		// Revert image pixels to uint8 value
 		var pix []uint8
 		for _, k := range set[i] {
 			pix = append(pix, uint8(k*127.5+127.5))
 		}
 
 		img.Pix = pix
-		imageFlusher := dotmatrix.BrailleFlusher{}
-		if err := imageFlusher.Flush(os.Stdout, img); err != nil {
-			log.Fatal(err)
-		}
+		dotmatrix.Print(os.Stdout, img)
 		fmt.Printf("MAX: %d LABEL: %d\n", maxIdx, label)
 		accuracyMax[maxIdx == label]++
 	}
