@@ -108,8 +108,8 @@ func countAccuracy(prediction, tLabels, set [][]float64) {
 
 		// Rvert image pixels to uint8 value
 		var pix []uint8
-		for k := range set {
-			pix = append(pix, uint8(set[i][k]*127.5+127.5))
+		for _, k := range set[i] {
+			pix = append(pix, uint8(k*127.5+127.5))
 		}
 
 		img.Pix = pix
