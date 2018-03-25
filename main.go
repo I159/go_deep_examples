@@ -55,25 +55,25 @@ func getSets(path string) (set, tSet, labels, tLabels [][]float64, err error) {
 	return
 }
 
-func declareNetwork() go_deep.Network {
-	inputShape := go_deep.InputShape{
+func declareNetwork() goDeep.Network {
+	inputShape := goDeep.InputShape{
 		Size:         784,
 		LearningRate: .001,
 	}
-	hiddenLayers := []go_deep.HiddenShape{
-		go_deep.HiddenShape{
+	hiddenLayers := []goDeep.HiddenShape{
+		goDeep.HiddenShape{
 			Size:         64,
 			LearningRate: .001,
 			Bias:         0.5,
-			Activation:   new(go_deep.Sigmoid),
+			Activation:   new(goDeep.Sigmoid),
 		},
 	}
-	outputLayer := go_deep.OutputShape{
+	outputLayer := goDeep.OutputShape{
 		Size:       10,
-		Activation: new(go_deep.Sigmoid),
-		Cost:       new(go_deep.Quadratic),
+		Activation: new(goDeep.Sigmoid),
+		Cost:       new(goDeep.Quadratic),
 	}
-	return go_deep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
+	return goDeep.NewPerceptron(inputShape, hiddenLayers, outputLayer)
 }
 
 func visualizeGradient(learnCost []float64) {
